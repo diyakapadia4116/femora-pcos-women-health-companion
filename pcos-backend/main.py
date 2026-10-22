@@ -1,8 +1,6 @@
 import datetime
-# pyrefly: ignore[missing-import]
 from fastapi import FastAPI, Depends, HTTPException, status, Header
-# pyrefly: ignore[missing-import, parse-error]
-from fastapi.middleware.cors CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -515,7 +513,6 @@ def submit_contact(msg: ContactCreate, db: Session = Depends(get_db)):
     return {"status": "success", "message": "Thank you for reaching out! Our health team will get back to you within 24 hours."}
 
 if __name__ == "__main__":
-    # pyrefly: ignore[missing-import]
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
