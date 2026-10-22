@@ -74,14 +74,14 @@ Double click `run_app.bat` or run in terminal:
 ```bash
 cd pcos-backend
 python main.py
-# Server runs on http://127.0.0.1:8000 (API Docs at http://127.0.0.1:8000/docs)
+# Server runs on https://femora-pcos-backend.onrender.com (API Docs at https://femora-pcos-backend.onrender.com/docs)
 ```
 
 **Frontend:**
 ```bash
 cd pcos-frontend
 npm.cmd run dev
-# Web application available on http://localhost:5173
+# Web application available on https://femora-pcos-women-health-companion.vercel.app/
 ```
 
 ---

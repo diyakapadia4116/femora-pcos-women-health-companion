@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = 'https://femora-pcos-backend.onrender.com/api/v1';
 
 const getHeaders = () => {
   const token = localStorage.getItem('pcos_token');
@@ -75,7 +75,7 @@ export const api = {
       return data;
     } catch (e) {
       if (e.message && (e.message.includes('Failed to fetch') || e.message.includes('NetworkError'))) {
-        throw new Error('Cannot connect to backend server. Make sure Python FastAPI backend is running on http://127.0.0.1:8000');
+        throw new Error('Cannot connect to backend server. Make sure Python FastAPI backend is running on https://femora-pcos-backend.onrender.com');
       }
       throw e;
     }
@@ -120,7 +120,7 @@ export const api = {
       return data;
     } catch (e) {
       if (e.message && (e.message.includes('Failed to fetch') || e.message.includes('NetworkError'))) {
-        throw new Error('Cannot connect to backend server. Make sure Python FastAPI backend is running on http://127.0.0.1:8000');
+        throw new Error('Cannot connect to backend server. Make sure Python FastAPI backend is running on https://femora-pcos-backend.onrender.com');
       }
       throw e;
     }
