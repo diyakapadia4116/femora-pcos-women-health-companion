@@ -5,7 +5,8 @@ from jose import jwt, JWTError
 from typing import Optional, Dict, Any
 
 # JWT Secret & Algorithm configuration
-SECRET_KEY = "pcos_companion_secret_jwt_key_super_secure_key_for_sgp_review"
+# Read from env (set JWT_SECRET_KEY on Render). Falls back to the old value so existing tokens keep working.
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "pcos_companion_secret_jwt_key_super_secure_key_for_sgp_review")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
