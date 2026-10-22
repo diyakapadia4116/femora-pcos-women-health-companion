@@ -1,5 +1,9 @@
-const API_BASE = 'https://femora-pcos-backend.onrender.com/api';
-const BACKEND_ROOT = 'https://femora-pcos-backend.onrender.com';
+const DEFAULT_BACKEND = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://127.0.0.1:8000'
+  : 'https://femora-pcos-backend.onrender.com';
+
+const API_BASE = (import.meta.env.VITE_API_URL || DEFAULT_BACKEND).replace(/\/$/, '') + '/api';
+const BACKEND_ROOT = (import.meta.env.VITE_API_URL || DEFAULT_BACKEND).replace(/\/$/, '');
 
 // Ping the backend root to wake up Render's free tier (cold start prevention).
 // Call this once on app load; it doesn't need to succeed for the app to work.
