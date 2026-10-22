@@ -47,12 +47,12 @@ app = FastAPI(
 )
 
 # Enable CORS for frontend integration
+# Allow all origins — the app uses Bearer token auth (not cookies), so this is safe.
+# This also prevents CORS errors during local development and from any Vercel preview URL.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://femora-pcos-women-health-companion.vercel.app",
-        "https://femora-pcos-women-health-companion-jupin2019.vercel.app"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -513,6 +513,7 @@ def submit_contact(msg: ContactCreate, db: Session = Depends(get_db)):
     return {"status": "success", "message": "Thank you for reaching out! Our health team will get back to you within 24 hours."}
 
 if __name__ == "__main__":
+    # pyrefly: ignore[missing-import]
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 

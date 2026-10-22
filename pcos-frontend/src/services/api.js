@@ -1,4 +1,15 @@
 const API_BASE = 'https://femora-pcos-backend.onrender.com/api';
+const BACKEND_ROOT = 'https://femora-pcos-backend.onrender.com';
+
+// Ping the backend root to wake up Render's free tier (cold start prevention).
+// Call this once on app load; it doesn't need to succeed for the app to work.
+export const pingBackend = async () => {
+  try {
+    await fetch(BACKEND_ROOT, { method: 'GET', cache: 'no-store' });
+  } catch (_) {
+    // Silently ignore — wakeup best-effort only
+  }
+};
 
 const getHeaders = () => {
   const token = localStorage.getItem('pcos_token');
