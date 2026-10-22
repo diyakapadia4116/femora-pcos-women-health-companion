@@ -1,5 +1,8 @@
 import datetime
-from fastapi import FastAPI, Depends, HTTPException, status, Header
+import os
+import traceback
+from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -29,15 +32,15 @@ from seed_data import seed_database
 # Create tables
 try:
     Base.metadata.create_all(bind=engine)
-    print("✓ Database tables verified and created successfully.")
+    print("[OK] Database tables verified and created successfully.")
 except Exception as e:
     print("\n" + "="*70)
-    print("⚠️  DATABASE CONNECTION NOTICE:")
+    print("[!] DATABASE CONNECTION NOTICE:")
     print(f"Could not connect to database or create tables: {e}")
     print("If using PostgreSQL:")
     print(" 1. Make sure PostgreSQL service is running.")
     print(" 2. Make sure the database exists. Run in pgAdmin / psql: CREATE DATABASE pcos_db;")
-    print(" 3. Check DB_PASS and DB_USER in database.py")
+    print(" 3. Check the DATABASE_URL environment variable (Supabase session pooler URL).")
     print("="*70 + "\n")
 
 app = FastAPI(
@@ -46,23 +49,44 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend integration
-# Allow all origins — the app uses Bearer token auth (not cookies), so this is safe.
-# This also prevents CORS errors during local development and from any Vercel preview URL.
+# ---- CORS ----
+# The app uses Bearer-token auth (no cookies), so allowing any origin is safe and
+# works for the Vercel production URL, preview deployments and localhost.
+# To restrict, set CORS_ORIGINS on Render to a comma-separated list, e.g.
+#   CORS_ORIGINS=https://femora-pcos-women-health-companion.vercel.app,http://localhost:5173
+_cors_env = os.getenv("CORS_ORIGINS", "").strip()
+CORS_ORIGINS = [o.strip().rstrip("/") for o in _cors_env.split(",") if o.strip()] or ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
+    allow_origin_regex=None if CORS_ORIGINS == ["*"] else r"https://.*\.vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
+
+# Unhandled exceptions are raised outside CORSMiddleware, so the browser would see a
+# 500 *without* CORS headers and report it as a "CORS error". Catch them here and
+# attach the headers so the real error message reaches the frontend.
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    traceback.print_exc()
+    origin = request.headers.get("origin", "")
+    headers = {}
+    if origin and (CORS_ORIGINS == ["*"] or origin.rstrip("/") in CORS_ORIGINS or origin.endswith(".vercel.app")):
+        headers = {"Access-Control-Allow-Origin": origin if CORS_ORIGINS != ["*"] else "*", "Vary": "Origin"}
+    return JSONResponse(status_code=500, content={"detail": "Internal server error. Please try again."}, headers=headers)
 
 @app.on_event("startup")
 def startup_event():
     # PostgreSQL startup: Database tables are ready for real user registrations
-    print("✓ Backend ready for incoming requests & user registrations.")
+    print("[OK] Backend ready for incoming requests & user registrations.")
 
 @app.get("/")
+@app.head("/")
 def root():
     return {
         "platform": "Women's Health Intelligence Platform (PCOS Companion)",
@@ -71,6 +95,11 @@ def root():
         "docs": "/docs",
         "project": "5th Semester Software Group Project"
     }
+
+@app.get("/health")
+@app.head("/health")
+def health():
+    return {"status": "ok"}
 
 # Helper dependency to extract current user from Authorization header
 def get_current_user(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)) -> User:
@@ -319,16 +348,16 @@ def add_lifestyle_log(log_data: LifestyleLogCreate, current_user: User = Depends
     llog = LifestyleLog(
         user_id=current_user.id,
         log_date=log_date,
-        water_liters=log_data.water_liters or 1.8,
-        sleep_hours=log_data.sleep_hours or 7.5,
+        water_liters=log_data.water_liters if log_data.water_liters is not None else 1.8,
+        sleep_hours=log_data.sleep_hours if log_data.sleep_hours is not None else 7.5,
         sleep_quality=log_data.sleep_quality or "Good",
-        stress_level=log_data.stress_level or 4,
-        activity_minutes=log_data.activity_minutes or 45,
+        stress_level=log_data.stress_level if log_data.stress_level is not None else 4,
+        activity_minutes=log_data.activity_minutes if log_data.activity_minutes is not None else 45,
         activity_type=log_data.activity_type or "Morning Yoga",
         activity_intensity=log_data.activity_intensity or "Low",
-        calories=log_data.calories or 1850,
-        protein_g=log_data.protein_g or 85.0,
-        sugar_g=log_data.sugar_g or 24.0,
+        calories=log_data.calories if log_data.calories is not None else 1850,
+        protein_g=log_data.protein_g if log_data.protein_g is not None else 85.0,
+        sugar_g=log_data.sugar_g if log_data.sugar_g is not None else 24.0,
         is_exam_period=log_data.is_exam_period or False,
         habits_completed=log_data.habits_completed or [],
         supplements=log_data.supplements or []
@@ -515,5 +544,5 @@ def submit_contact(msg: ContactCreate, db: Session = Depends(get_db)):
 if __name__ == "__main__":
     # pyrefly: ignore[missing-import]
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
 
