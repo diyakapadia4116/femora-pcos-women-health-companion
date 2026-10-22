@@ -3,8 +3,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from urllib.parse import quote_plus
-
 # Attempt to load from .env file if python-dotenv is installed
 try:
     from dotenv import load_dotenv
@@ -13,23 +11,28 @@ except ImportError:
     pass
 
 # =========================================================================
-# DATABASE CONFIGURATION (PostgreSQL / SQLite)
+# DATABASE CONFIGURATION
 # =========================================================================
-# Set your PostgreSQL credentials below:
-DB_USER = "postgres"
-DB_PASS = "diyakapadia4116"  # Your PostgreSQL password
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "pcos_db"
+# On Render: set DATABASE_URL environment variable to your Supabase
+#   Session Pooler URL (port 6543, IPv4-compatible):
+#   postgresql://postgres.xxxx:PASSWORD@aws-0-region.pooler.supabase.com:6543/postgres
+#
+# For local development: set DATABASE_URL in a .env file, or it falls
+#   back to a local SQLite database so the app still runs without Postgres.
+# =========================================================================
 
-# Construct connection URL with safe URL-encoding for password
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    f"postgresql://{DB_USER}:{quote_plus(DB_PASS)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    "sqlite:///./pcos_local.db"  # Safe local fallback — no credentials needed
 )
 
-# SQLite needs check_same_thread=False; PostgreSQL and MySQL do not.
+# Fix for Render/Heroku which may provide "postgres://" instead of "postgresql://"
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# SQLite needs check_same_thread=False; PostgreSQL does not.
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
 engine = create_engine(
     DATABASE_URL,
     connect_args=connect_args,
