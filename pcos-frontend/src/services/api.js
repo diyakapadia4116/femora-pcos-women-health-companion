@@ -1,4 +1,4 @@
-const API_BASE = 'https://femora-pcos-backend.onrender.com/api/v1';
+const API_BASE = 'https://femora-pcos-backend.onrender.com';
 
 const getHeaders = () => {
   const token = localStorage.getItem('pcos_token');
