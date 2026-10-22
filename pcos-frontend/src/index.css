@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    color: #1E293B;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00786F;
+}
+
+/* Prototype Custom Gradient & Wave background */
+.hero-gradient {
+  background: radial-gradient(circle at 80% 20%, rgba(252, 231, 243, 0.6) 0%, rgba(240, 253, 250, 0.4) 50%, rgba(248, 250, 252, 1) 100%);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(0, 120, 111, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* Input range slider custom styling */
+input[type=range] {
+  accent-color: #00786F;
+}
+
+/* Printable report styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
